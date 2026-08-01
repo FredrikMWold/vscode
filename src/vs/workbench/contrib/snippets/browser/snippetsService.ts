@@ -332,6 +332,9 @@ export class SnippetsService implements ISnippetsService {
 				// isTopLevel requested but mismatching
 				continue;
 			}
+			if (typeof opts?.autoExpandSnippets === 'boolean' && opts.autoExpandSnippets !== snippet.autoExpand) {
+				continue;
+			}
 			if (resourceUri && !snippet.isFileIncluded(resourceUri)) {
 				// include/exclude settings don't match
 				continue;

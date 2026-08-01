@@ -118,6 +118,7 @@ export class Snippet {
 		readonly include?: string[],
 		readonly exclude?: string[],
 		readonly extensionId?: ExtensionIdentifier,
+		readonly autoExpand: boolean = false,
 	) {
 		this.prefixLow = prefix.toLowerCase();
 		this._bodyInsights = new WindowIdleValue(getActiveWindow(), () => new SnippetBodyInsights(this.body));
@@ -181,6 +182,7 @@ interface JsonSerializedSnippet {
 	description: string;
 	include?: string | string[];
 	exclude?: string | string[];
+	autoExpand?: boolean;
 }
 
 function isJsonSerializedSnippet(thing: unknown): thing is JsonSerializedSnippet {
@@ -369,6 +371,7 @@ export class SnippetFile {
 				include,
 				exclude,
 				this._extension?.identifier,
+				Boolean(snippet.autoExpand),
 			));
 		}
 	}

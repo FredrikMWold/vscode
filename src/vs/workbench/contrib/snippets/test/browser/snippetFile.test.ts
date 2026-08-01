@@ -9,10 +9,15 @@ import { URI } from '../../../../../base/common/uri.js';
 import { SnippetParser } from '../../../../../editor/contrib/snippet/browser/snippetParser.js';
 import { generateUuid } from '../../../../../base/common/uuid.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
+import { FileService } from '../../../../../platform/files/common/fileService.js';
+import { NullLogService } from '../../../../../platform/log/common/log.js';
+import { InMemoryFileSystemProvider } from '../../../../../platform/files/common/inMemoryFilesystemProvider.js';
+import { Schemas } from '../../../../../base/common/network.js';
+import { VSBuffer } from '../../../../../base/common/buffer.js';
 
 suite('Snippets', function () {
 
-	ensureNoDisposablesAreLeakedInTestSuite();
+	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 
 	class TestSnippetFile extends SnippetFile {
 		constructor(filepath: URI, snippets: Snippet[]) {
@@ -68,6 +73,34 @@ suite('Snippets', function () {
 		file.select('foo', bucket);
 		assert.strictEqual(bucket.length, 2);
 
+	});
+
+	test('SnippetFile#load - autoExpand', async () => {
+		const fileService = disposables.add(new FileService(new NullLogService()));
+		const fileSystemProvider = disposables.add(new InMemoryFileSystemProvider());
+		disposables.add(fileService.registerProvider(Schemas.file, fileSystemProvider));
+		const snippetsFolder = URI.file('/snippets');
+		const snippetsLocation = URI.joinPath(snippetsFolder, 'javascript.json');
+		await fileService.createFolder(snippetsFolder);
+		await fileService.writeFile(snippetsLocation, VSBuffer.fromString(JSON.stringify({
+			'Auto Expand': {
+				prefix: 'log',
+				body: 'console.log($1);',
+				autoExpand: true,
+			},
+			'Manual': {
+				prefix: 'warn',
+				body: 'console.warn($1);',
+			},
+		})));
+
+		const file = new SnippetFile(SnippetSource.User, snippetsLocation, ['javascript'], undefined, fileService, undefined!);
+		await file.load();
+
+		assert.deepStrictEqual(file.data.map(snippet => ({ prefix: snippet.prefix, autoExpand: snippet.autoExpand })), [
+			{ prefix: 'log', autoExpand: true },
+			{ prefix: 'warn', autoExpand: false },
+		]);
 	});
 
 	test('Snippet#needsClipboard', function () {

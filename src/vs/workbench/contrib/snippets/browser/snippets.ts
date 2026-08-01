@@ -14,6 +14,7 @@ export interface ISnippetGetOptions {
 	includeNoPrefixSnippets?: boolean;
 	noRecencySort?: boolean;
 	fileTemplateSnippets?: boolean;
+	autoExpandSnippets?: boolean;
 }
 
 export interface ISnippetsService {

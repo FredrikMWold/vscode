@@ -60,6 +60,11 @@ const snippetSchemaProperties: IJSONSchemaMap = {
 		description: nls.localize('snippetSchema.json.isFileTemplate', 'The snippet is meant to populate or replace a whole file'),
 		type: 'boolean'
 	},
+	autoExpand: {
+		description: nls.localize('snippetSchema.json.autoExpand', 'Controls whether the snippet is inserted automatically when its prefix is typed.'),
+		type: 'boolean',
+		default: false
+	},
 	body: {
 		markdownDescription: nls.localize('snippetSchema.json.body', 'The snippet content. Use `$1`, `${1:defaultText}` to define cursor positions, use `$0` for the final cursor position. Insert variable values with `${varName}` and `${varName:defaultText}`, e.g. `This is file: $TM_FILENAME`.'),
 		type: ['string', 'array'],

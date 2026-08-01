@@ -1,9 +1,9 @@
 {
-	"nameShort": "Code - OSS",
-	"nameLong": "Code - OSS",
-	"applicationName": "code-oss",
-	"dataFolderName": ".vscode-oss",
-	"sharedDataFolderName": ".vscode-oss-shared",
+	"nameShort": "Code",
+	"nameLong": "Visual Studio Code",
+	"applicationName": "code",
+	"dataFolderName": ".vscode",
+	"sharedDataFolderName": ".vscode-shared",
 	"win32MutexName": "vscodeoss",
 	"licenseName": "MIT",
 	"licenseUrl": "https://github.com/microsoft/vscode/blob/main/LICENSE.txt",
@@ -11,9 +11,9 @@
 	"serverGreeting": [],
 	"serverLicense": [],
 	"serverLicensePrompt": "",
-	"serverApplicationName": "code-server-oss",
-	"serverDataFolderName": ".vscode-server-oss",
-	"tunnelApplicationName": "code-tunnel-oss",
+	"serverApplicationName": "code-server",
+	"serverDataFolderName": ".vscode-server",
+	"tunnelApplicationName": "code-tunnel",
 	"win32DirName": "Microsoft Code OSS",
 	"win32NameVersion": "Microsoft Code OSS",
 	"win32RegValueName": "CodeOSS",
@@ -28,14 +28,122 @@
 	"darwinBundleIdentifier": "com.visualstudio.code.oss",
 	"darwinProfileUUID": "47827DD9-4734-49A0-AF80-7E19B11495CC",
 	"darwinProfilePayloadUUID": "CF808BE7-53F3-46C6-A7E2-7EDB98A5E959",
-	"linuxIconName": "code-oss",
+	"linuxIconName": "vscode",
 	"licenseFileName": "LICENSE.txt",
 	"reportIssueUrl": "https://github.com/microsoft/vscode/issues/new",
 	"nodejsArtifactFeed": "",
 	"electronArtifactFeed": "",
-	"urlProtocol": "code-oss",
+	"urlProtocol": "vscode",
+	"quality": "stable",
 	"agentsTelemetryAppName": "agents",
 	"webviewContentExternalBaseUrlTemplate": "https://{{uuid}}.vscode-cdn.net/insider/ef65ac1ba57f57f2a3961bfe94aa20481caca4c6/out/vs/workbench/contrib/webview/browser/pre/",
+	"extensionsGallery": {
+		"nlsBaseUrl": "https://www.vscode-unpkg.net/_lp/",
+		"serviceUrl": "https://marketplace.visualstudio.com/_apis/public/gallery",
+		"itemUrl": "https://marketplace.visualstudio.com/items",
+		"publisherUrl": "https://marketplace.visualstudio.com/publishers",
+		"resourceUrlTemplate": "https://{publisher}.vscode-unpkg.net/{publisher}/{name}/{version}/{path}",
+		"extensionUrlTemplate": "https://www.vscode-unpkg.net/_gallery/{publisher}/{name}/latest",
+		"controlUrl": "https://main.vscode-cdn.net/extensions/marketplace.json",
+		"mcpUrl": "https://main.vscode-cdn.net/mcp/servers.json",
+		"accessSKUs": [
+			"copilot_enterprise_seat",
+			"copilot_enterprise_seat_quota",
+			"copilot_enterprise_seat_multi_quota",
+			"copilot_enterprise_seat_assignment",
+			"copilot_enterprise_seat_assignment_quota",
+			"copilot_enterprise_seat_assignment_multi_quota",
+			"copilot_enterprise_trial_seat",
+			"copilot_enterprise_trial_seat_quota",
+			"copilot_for_business_seat",
+			"copilot_for_business_seat_quota",
+			"copilot_for_business_seat_multi_quota",
+			"copilot_for_business_seat_assignment",
+			"copilot_for_business_seat_assignment_quota",
+			"copilot_for_business_seat_assignment_multi_quota",
+			"copilot_for_business_trial_seat",
+			"copilot_for_business_trial_seat_quota"
+		]
+	},
+	"mcpGallery": {
+		"serviceUrl": "https://api.mcp.github.com",
+		"itemWebUrl": "https://github.com/mcp/{name}",
+		"publisherUrl": "https://github.com/{name}",
+		"supportUrl": "https://support.github.com",
+		"privacyPolicyUrl": "https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement",
+		"termsOfServiceUrl": "https://docs.github.com/site-policy/github-terms/github-terms-of-service",
+		"reportUrl": "https://docs.github.com/communities/maintaining-your-safety-on-github/reporting-abuse-or-spam"
+	},
+	"extensionAllowedBadgeProviders": [
+		"api.travis-ci.com",
+		"app.fossa.io",
+		"badge.buildkite.com",
+		"badge.fury.io",
+		"badgen.net",
+		"badges.frapsoft.com",
+		"badges.gitter.im",
+		"cdn.travis-ci.com",
+		"ci.appveyor.com",
+		"circleci.com",
+		"cla.opensource.microsoft.com",
+		"codacy.com",
+		"codeclimate.com",
+		"codecov.io",
+		"coveralls.io",
+		"david-dm.org",
+		"deepscan.io",
+		"dev.azure.com",
+		"docs.rs",
+		"flat.badgen.net",
+		"gitlab.com",
+		"godoc.org",
+		"goreportcard.com",
+		"img.shields.io",
+		"isitmaintained.com",
+		"marketplace.visualstudio.com",
+		"nodesecurity.io",
+		"opencollective.com",
+		"snyk.io",
+		"travis-ci.com",
+		"travis-ci.org",
+		"visualstudio.com",
+		"vsmarketplacebadge.apphb.com"
+	],
+	"extensionAllowedBadgeProvidersRegex": [
+		"^https:\\/\\/github\\.com\\/[^/]+\\/[^/]+\\/(actions\\/)?workflows\\/.*badge\\.svg"
+	],
+	"extensionPublisherOrgs": ["microsoft"],
+	"trustedExtensionPublishers": ["microsoft", "github", "openai"],
+	"tunnelApplicationConfig": {
+		"editorWebUrl": "https://vscode.dev",
+		"extension": {
+			"friendlyName": "Remote - Tunnels",
+			"extensionId": "ms-vscode.remote-server"
+		},
+		"authenticationProviders": {
+			"github": {
+				"scopes": ["user:email", "read:org"]
+			},
+			"microsoft": {
+				"scopes": [
+					"46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default",
+					"profile",
+					"openid"
+				]
+			}
+		}
+	},
+	"tunnelServerQualities": {
+		"stable": {
+			"serverApplicationName": "code-server"
+		},
+		"exploration": {
+			"serverApplicationName": "code-server-exploration"
+		},
+		"insider": {
+			"serverApplicationName": "code-server-insiders"
+		}
+	},
 	"builtInExtensions": [
 		{
 			"name": "ms-vscode.js-debug-companion",
@@ -125,18 +233,9 @@
 		"providerExtensionId": "vscode.github-authentication",
 		"providerUriSetting": "github-enterprise.uri",
 		"providerScopes": [
-			[
-				"read:user",
-				"user:email",
-				"repo",
-				"workflow"
-			],
-			[
-				"user:email"
-			],
-			[
-				"read:user"
-			]
+			["read:user", "user:email", "repo", "workflow"],
+			["user:email"],
+			["read:user"]
 		],
 		"entitlementUrl": "https://api.github.com/copilot_internal/user",
 		"entitlementSignupLimitedUrl": "https://api.github.com/copilot_internal/subscribe_limited_user",
@@ -240,9 +339,7 @@
 			"type": "light"
 		}
 	],
-	"builtInExtensionsEnabledWithAutoUpdates": [
-		"GitHub.copilot-chat"
-	],
+	"builtInExtensionsEnabledWithAutoUpdates": ["GitHub.copilot-chat"],
 	"sessionsWindowAllowedExtensions": [],
 	"voiceWsUrl": "wss://falcon-caas.mai.microsoft.com/voice-code/api/v1/realtime/voice"
 }

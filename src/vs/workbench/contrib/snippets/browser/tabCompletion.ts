@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { onUnexpectedError } from '../../../../base/common/errors.js';
 import { KeyCode } from '../../../../base/common/keyCodes.js';
 import { RawContextKey, IContextKeyService, ContextKeyExpr, IContextKey } from '../../../../platform/contextkey/common/contextkey.js';
 import { KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
@@ -36,6 +37,7 @@ export class TabCompletionController implements IEditorContribution {
 
 	private readonly _hasSnippets: IContextKey<boolean>;
 	private readonly _configListener: IDisposable;
+	private readonly _typeListener: IDisposable;
 	private _enabled?: boolean;
 	private _selectionListener?: IDisposable;
 
@@ -55,11 +57,15 @@ export class TabCompletionController implements IEditorContribution {
 				this._update();
 			}
 		});
+		this._typeListener = this._editor.onDidType(() => {
+			this._performAutoExpansion().catch(onUnexpectedError);
+		});
 		this._update();
 	}
 
 	dispose(): void {
 		this._configListener.dispose();
+		this._typeListener.dispose();
 		this._selectionListener?.dispose();
 	}
 
@@ -81,48 +87,15 @@ export class TabCompletionController implements IEditorContribution {
 	private _updateSnippets(): void {
 
 		// reset first
-		this._activeSnippets = [];
+		this._activeSnippets = this._findMatchingSnippets(false);
 		this._completionProvider?.dispose();
 
 		if (!this._editor.hasModel()) {
 			return;
 		}
 
-		// lots of dance for getting the
 		const selection = this._editor.getSelection();
 		const model = this._editor.getModel();
-		model.tokenization.tokenizeIfCheap(selection.positionLineNumber);
-		const id = model.getLanguageIdAtPosition(selection.positionLineNumber, selection.positionColumn);
-		const snippets = this._snippetService.getSnippetsSync(id, model.uri);
-
-		if (!snippets) {
-			// nothing for this language
-			this._hasSnippets.set(false);
-			return;
-		}
-
-		if (Range.isEmpty(selection)) {
-			// empty selection -> real text (no whitespace) left of cursor
-			const prefix = getNonWhitespacePrefix(model, selection.getPosition());
-			if (prefix) {
-				for (const snippet of snippets) {
-					if (prefix.endsWith(snippet.prefix)) {
-						this._activeSnippets.push(snippet);
-					}
-				}
-			}
-
-		} else if (!Range.spansMultipleLines(selection) && model.getValueLengthInRange(selection) <= 100) {
-			// actual selection -> snippet must be a full match
-			const selected = model.getValueInRange(selection);
-			if (selected) {
-				for (const snippet of snippets) {
-					if (selected === snippet.prefix) {
-						this._activeSnippets.push(snippet);
-					}
-				}
-			}
-		}
 
 		const len = this._activeSnippets.length;
 		if (len === 0) {
@@ -154,6 +127,72 @@ export class TabCompletionController implements IEditorContribution {
 		}
 	}
 
+	private _findMatchingSnippets(autoExpandOnly: boolean): Snippet[] {
+		if (!this._editor.hasModel()) {
+			return [];
+		}
+
+		const result: Snippet[] = [];
+		const selection = this._editor.getSelection();
+		const model = this._editor.getModel();
+		model.tokenization.tokenizeIfCheap(selection.positionLineNumber);
+		const id = model.getLanguageIdAtPosition(selection.positionLineNumber, selection.positionColumn);
+		const snippets = this._snippetService.getSnippetsSync(id, model.uri, autoExpandOnly ? { autoExpandSnippets: true, noRecencySort: true } : undefined);
+
+		if (!snippets) {
+			return result;
+		}
+
+		if (Range.isEmpty(selection)) {
+			const prefix = getNonWhitespacePrefix(model, selection.getPosition());
+			if (prefix) {
+				for (const snippet of snippets) {
+					const prefixMatches = prefix.endsWith(snippet.prefix);
+					if ((!autoExpandOnly || snippet.autoExpand) && prefixMatches) {
+						result.push(snippet);
+					}
+				}
+			}
+		} else if (!Range.spansMultipleLines(selection) && model.getValueLengthInRange(selection) <= 100) {
+			const selected = model.getValueInRange(selection);
+			if (selected) {
+				for (const snippet of snippets) {
+					if ((!autoExpandOnly || snippet.autoExpand) && selected === snippet.prefix) {
+						result.push(snippet);
+					}
+				}
+			}
+		}
+
+		return result;
+	}
+
+	private async _performAutoExpansion(): Promise<void> {
+		if (this._editor.inComposition || this._editor.getSelections()?.length !== 1) {
+			return;
+		}
+
+		const snippets = this._findMatchingSnippets(true);
+		if (snippets.length === 1) {
+			await this._insertSnippet(snippets[0]);
+		}
+	}
+
+	private async _insertSnippet(snippet: Snippet): Promise<void> {
+		let clipboardText: string | undefined;
+		if (snippet.needsClipboard) {
+			const state = new EditorState(this._editor, CodeEditorStateFlag.Value | CodeEditorStateFlag.Position);
+			clipboardText = await this._clipboardService.readText();
+			if (!state.validate(this._editor)) {
+				return;
+			}
+		}
+		SnippetController2.get(this._editor)?.insert(snippet.codeSnippet, {
+			overwriteBefore: snippet.prefix.length, overwriteAfter: 0,
+			clipboardText
+		});
+	}
+
 	async performSnippetCompletions() {
 		if (!this._editor.hasModel()) {
 			return;
@@ -162,22 +201,7 @@ export class TabCompletionController implements IEditorContribution {
 		if (this._activeSnippets.length === 1) {
 			// one -> just insert
 			const [snippet] = this._activeSnippets;
-
-			// async clipboard access might be required and in that case
-			// we need to check if the editor has changed in flight and then
-			// bail out (or be smarter than that)
-			let clipboardText: string | undefined;
-			if (snippet.needsClipboard) {
-				const state = new EditorState(this._editor, CodeEditorStateFlag.Value | CodeEditorStateFlag.Position);
-				clipboardText = await this._clipboardService.readText();
-				if (!state.validate(this._editor)) {
-					return;
-				}
-			}
-			SnippetController2.get(this._editor)?.insert(snippet.codeSnippet, {
-				overwriteBefore: snippet.prefix.length, overwriteAfter: 0,
-				clipboardText
-			});
+			await this._insertSnippet(snippet);
 
 		} else if (this._activeSnippets.length > 1) {
 			// two or more -> show IntelliSense box
